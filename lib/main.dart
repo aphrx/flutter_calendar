@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 
 
 void main() async {
-  await DB.init();
   runApp(MyApp());
 }
 

@@ -26,10 +26,10 @@ class _CalendarState extends State<Calendar> {
 
      List<dynamic> _selectedEvents = [];
      List<Widget> get _eventWidgets => _selectedEvents.map((e) => events(e)).toList();
-
+  
   void initState() {
     super.initState();
-    DB.init();
+    DB.init().then((value) => _fetchEvents());
     _calendarController = CalendarController();
   }
 
@@ -153,19 +153,20 @@ class _CalendarState extends State<Calendar> {
       else{
           _events[formattedDate] = [element.name.toString()];
         }
-        print(_events);
       }
     );
     setState(() {});
   }
 
-  void _addEvent(String event){
+  void _addEvent(String event) async{
     CalendarItem item = CalendarItem(
       date: _selectedDay.toString(),
       name: event
     );
-    DB.insert(CalendarItem.table, item);
-    setState(() {});
+    await DB.insert(CalendarItem.table, item);
+    _selectedEvents.add(event);
+    _fetchEvents();
+    
     Navigator.pop(context);
   }
 
@@ -174,8 +175,9 @@ class _CalendarState extends State<Calendar> {
     List<CalendarItem> d = _data.where((element) => element.name == s).toList();
     if(d.length == 1){
       DB.delete(CalendarItem.table, d[0]);
+      _selectedEvents.removeWhere((e) => e == s);
+      _fetchEvents();
     }
-      setState(() {});
   }
 
   Widget calendar(){
@@ -249,7 +251,6 @@ class _CalendarState extends State<Calendar> {
 
   @override
   Widget build(BuildContext context) {
-    _fetchEvents();
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
       body:  ListView(
